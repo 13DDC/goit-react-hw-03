@@ -1,23 +1,50 @@
-import Contact from "./Contact/Contact";
-import ContactForm from "./ContactForm/ContactForm";
-import ContactList from "./ContactList/ContactList";
-import SearchBox from "./SearchBox/SearchBox";
+import { useEffect, useState } from "react";
+import ContactForm from "./components/ContactForm/ContactForm";
+import ContactList from "./components/ContactList/ContactList";
+import SearchBox from "./components/SearchBox/SearchBox";
+import contacts from "./contact.json";
+import "./App.css";
 
-const contact = [
-  { id: "id-1", name: "Rosie Simpson", number: "459-12-56" },
-  { id: "id-2", name: "Hermione Kline", number: "443-89-12" },
-  { id: "id-3", name: "Eden Clements", number: "645-17-79" },
-  { id: "id-4", name: "Annie Copeland", number: "227-91-26" },
-];
+function App() {
+  const localeContacts = () => {
+    const savedContacts = localStorage.getItem("Contacts");
+    return savedContacts ? JSON.parse(savedContacts) : contacts;
+  };
+  const [contact, setContact] = useState(localeContacts);
 
-const App = () => {
-  return (
-    <>
-      <ContactForm />
-      <SearchBox />
-      <ContactList Contact={contact} />
-    </>
+  const [filter, setFilter] = useState("");
+
+  useEffect(() => {
+    window.localStorage.setItem("Contacts", JSON.stringify(contact));
+  }, [contact]);
+
+  const addContact = (newContact) => {
+    setContact((prevContact) => {
+      return [...prevContact, newContact];
+    });
+  };
+  const handleDelete = (contactId) => {
+    setContact((prevContact) => {
+      return prevContact.filter((contact) => contact.id !== contactId);
+    });
+  };
+  const searchContact = contact.filter((cont) =>
+    cont.name.toLowerCase().includes(filter.toLowerCase())
   );
-};
+  const changeFilter = (value) => {
+    setFilter(value);
+  };
+
+  return (
+    <div>
+      <h1>Phonebook</h1>
+      <div className="card">
+        <ContactForm addContact={addContact} />
+        <SearchBox changeFilter={changeFilter} filter={filter} />
+      </div>
+      <ContactList handleDelete={handleDelete} contact={searchContact} />
+    </div>
+  );
+}
 
 export default App;
